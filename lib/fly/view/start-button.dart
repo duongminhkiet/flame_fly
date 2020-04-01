@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flame/sprite.dart';
 import 'package:flame_fly/fly/scene/langaw_gm1.dart';
+import 'package:flame_fly/fly/view/view.dart';
 
 class StartButton {
   final LangawGame game;
@@ -25,5 +26,7 @@ class StartButton {
 
   void update(double t) {}
 
-  void onTapDown() {}
+  void onTapDown() {
+    game.activeView = View.playing;
+  }
 }

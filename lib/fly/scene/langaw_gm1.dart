@@ -9,6 +9,8 @@ import 'package:flame_fly/fly/object/fly.dart';
 import 'package:flame_fly/fly/object/testObj.dart';
 import 'package:flame_fly/fly/object/testObjAnimation.dart';
 import 'package:flame_fly/fly/view/home-view.dart';
+import 'package:flame_fly/fly/view/lost-view.dart';
+import 'package:flame_fly/fly/view/start-button.dart';
 import 'package:flame_fly/fly/view/view.dart';
 import 'package:logger/logger.dart';
 import 'dart:math';
@@ -20,13 +22,12 @@ import 'package:flame/animation.dart' as flame_animation;
 import 'package:flame/sprite.dart';
 import 'package:flame/components/animation_component.dart';
 class LangawGame extends BaseGame {
-
+  var logger = Logger();
   Size screenSize;
   double tileSize;
   List<Fly> flies;
   Random rnd;
   Backyard background;
-  var logger;
 
   TestObj testObj;//ok
   TestObjAnimation testAni;//ok
@@ -34,13 +35,13 @@ class LangawGame extends BaseGame {
   ParallaxComponent parallaxComponent;
 
   HomeView homeView;
+  StartButton startButton;
+
   View activeView = View.home;
+  LostView lostView;
+
   LangawGame() {
     initialize();
-
-
-
-
   }
   final animation = flame_animation.Animation.sequenced('check/chopper.png', 4,
       textureWidth: 48, textureHeight: 48, stepTime: 0.15);
@@ -87,6 +88,8 @@ class LangawGame extends BaseGame {
 //    await spriteAnimationCheck.initialize();
 
     homeView = HomeView(this);
+    startButton = StartButton(this);
+    lostView = LostView(this);
   }
   void resize(Size size) {
     screenSize = size;
@@ -156,7 +159,15 @@ class LangawGame extends BaseGame {
 
 
 
-    if (activeView == View.home) homeView.render(c);
+    if (activeView == View.home) {
+      homeView.render(c);
+    }
+    if (activeView == View.home || activeView == View.lost) {
+      startButton.render(c);
+    }
+    if (activeView == View.lost) {
+      lostView.render(c);
+    }
   }
 
   void update(double t) {
@@ -178,10 +189,34 @@ class LangawGame extends BaseGame {
     //spriteAnimationCheck.update(t);
   }
   void onTapDown(TapDownDetails d) {
-    flies.forEach((Fly fly) {
-      if (fly.flyRect.contains(d.globalPosition)) {
-        fly.onTapDown();
+    logger.d('just onTapDown');
+    bool isHandled = false;
+
+    //start
+    if (!isHandled && startButton.rect.contains(d.globalPosition)) {
+      logger.d('just onTapDown START BUTTON => CLICKED NOT OK');
+      if (activeView == View.home || activeView == View.lost) {
+        startButton.onTapDown();
+        logger.d('just onTapDown START BUTTON => CLICKED OK');
+        isHandled = true;
       }
-    });
+    }
+
+    //flies
+    if (!isHandled) {
+      logger.d('just onTapDown FLIES NO TAPPED');
+      bool didHitAFly = false;
+      flies.forEach((Fly fly) {
+        if (fly.flyRect.contains(d.globalPosition)) {
+          fly.onTapDown();
+          logger.d('just onTapDown FLIES TAPPED');
+          isHandled = true;
+          didHitAFly = true;
+        }
+      });
+      if (activeView == View.playing && !didHitAFly) {
+        activeView = View.lost;
+      }
+    }
   }
 }
