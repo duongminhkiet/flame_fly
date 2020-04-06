@@ -69,6 +69,6 @@ class Fly{
     if(flyPaint != null) {
       flyPaint.color = Color(0xffff4757);
     }
-      game.spawnFly();
+      //game.spawnFly();
     }
 }
